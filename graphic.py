@@ -43,18 +43,23 @@ class Line:
 
 
 class Cell:
-    def __init__(self,point1,point2,window,has_left=True,has_top=True,has_bot=True,has_right=True):
+    def __init__(self,window,has_left=True,has_top=True,has_bot=True,has_right=True):
         self.__has_left_wall = has_left
         self.__has_right_wall = has_right
         self.__has_top_wall = has_top
         self.__has_bot_wall = has_bot
-        self.__x1 = point1.x
-        self.__y1 = point1.y
-        self.__x2 = point2.x
-        self.__y2 = point2.y
+        self.visited = False
+        self.__x1 = None
+        self.__y1 = None
+        self.__x2 = None
+        self.__y2 = None
         self.__win = window
 
-    def draw(self):
+    def draw(self,x1,y1,x2,y2): 
+        self.__x1 = x1
+        self.__y1 = y1
+        self.__x2 = x2
+        self.__y2 = y2
         if self.__has_left_wall:
             self.__win.draw_line(Line(Point(self.__x1,self.__y1),Point(self.__x1,self.__y2)),"black")
         if self.__has_right_wall:
@@ -63,3 +68,23 @@ class Cell:
             self.__win.draw_line(Line(Point(self.__x1,self.__y1),Point(self.__x2,self.__y1)),"black")
         if self.__has_bot_wall:
             self.__win.draw_line(Line(Point(self.__x1,self.__y2),Point(self.__x2,self.__y2)),"black")
+
+    def draw_move(self,to_cell,undo=False):
+        initial_mid_x = (self.__x1 + self.__x2) // 2
+        initial_mid_y = (self.__y1 + self.__y2) // 2
+        initial_mid_x_next = (to_cell.__x1 + to_cell.__x2) // 2
+        initial_mid_y_next = (to_cell.__y1 + to_cell.__y2) // 2
+
+        fill_color = "red"
+        if undo == True:
+            fill_color = "grey"
+
+        # line = Line(Point(initial_mid_x, initial_mid_y), Point(self.__x2, initial_mid_y))
+        # self.__win.draw_line(line, fill_color)
+        # line = Line(Point(to_cell.__x1, initial_mid_y_next), Point(initial_mid_x_next, initial_mid_y_next))
+        # self.__win.draw_line(line, fill_color)
+
+
+        line = Line(Point(initial_mid_x,initial_mid_y),Point(initial_mid_x_next,initial_mid_y_next))
+        self.__win.draw_line(line,"red")
+    
