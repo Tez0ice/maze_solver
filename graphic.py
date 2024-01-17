@@ -7,7 +7,7 @@ class Window:
         self.height = height
         self.__root = Tk()
         self.__root.title("Maze Solver")
-        self.canvas = Canvas(self.__root,width=self.width,height=self.height)
+        self.canvas = Canvas(self.__root,width=self.width,height=self.height,background="white")
         self.canvas.pack(fill=BOTH,expand=1)
         self.running = False
         self.__root.protocol("WM_DELETE_WINDOW",self.close) 
@@ -44,37 +44,57 @@ class Line:
 
 
 class Cell:
-    def __init__(self,window,has_left=True,has_top=True,has_bot=True,has_right=True):
-        self.__has_left_wall = has_left
-        self.__has_right_wall = has_right
-        self.__has_top_wall = has_top
-        self.__has_bot_wall = has_bot
+    def __init__(self,window=None,has_left=True,has_top=True,has_bot=True,has_right=True):
+        self._has_left_wall = has_left
+        self._has_right_wall = has_right
+        self._has_top_wall = has_top
+        self._has_bot_wall = has_bot
         self.visited = False
-        self.__x1 = None
-        self.__y1 = None
-        self.__x2 = None
-        self.__y2 = None
-        self.__win = window
+        self._x1 = None
+        self._y1 = None
+        self._x2 = None
+        self._y2 = None
+        self._win = window
 
-    def draw(self,x1,y1,x2,y2): 
-        self.__x1 = x1
-        self.__y1 = y1
-        self.__x2 = x2
-        self.__y2 = y2
-        if self.__has_left_wall:
-            self.__win.draw_line(Line(Point(self.__x1,self.__y1),Point(self.__x1,self.__y2)),"black")
-        if self.__has_right_wall:
-            self.__win.draw_line(Line(Point(self.__x2,self.__y1),Point(self.__x2,self.__y2)),"black")
-        if self.__has_top_wall:
-            self.__win.draw_line(Line(Point(self.__x1,self.__y1),Point(self.__x2,self.__y1)),"black")
-        if self.__has_bot_wall:
-            self.__win.draw_line(Line(Point(self.__x1,self.__y2),Point(self.__x2,self.__y2)),"black")
+    def draw(self,x1,y1,x2,y2):
+        
+        self._x1 = x1
+        self._y1 = y1
+        self._x2 = x2
+        self._y2 = y2
+
+        if self._win is None:
+            return
+
+        if self._has_left_wall:
+            self._win.draw_line(Line(Point(self._x1,self._y1),Point(self._x1,self._y2)),"black")
+        else:
+            self._win.draw_line(Line(Point(self._x1,self._y1),Point(self._x1,self._y2)),"white")
+            
+        if self._has_right_wall:
+            self._win.draw_line(Line(Point(self._x2,self._y1),Point(self._x2,self._y2)),"black")
+        else:
+            self._win.draw_line(Line(Point(self._x2,self._y1),Point(self._x2,self._y2)),"white")
+
+        if self._has_top_wall:
+            self._win.draw_line(Line(Point(self._x1,self._y1),Point(self._x2,self._y1)),"black")
+        else:
+            self._win.draw_line(Line(Point(self._x1,self._y1),Point(self._x2,self._y1)),"white")
+
+        if self._has_bot_wall:
+            self._win.draw_line(Line(Point(self._x1,self._y2),Point(self._x2,self._y2)),"black")
+        else:
+            self._win.draw_line(Line(Point(self._x1,self._y2),Point(self._x2,self._y2)),"white")
+
 
     def draw_move(self,to_cell,undo=False):
-        initial_mid_x = (self.__x1 + self.__x2) // 2
-        initial_mid_y = (self.__y1 + self.__y2) // 2
-        initial_mid_x_next = (to_cell.__x1 + to_cell.__x2) // 2
-        initial_mid_y_next = (to_cell.__y1 + to_cell.__y2) // 2
+        if self._win is None:
+            return
+
+        initial_mid_x = (self._x1 + self._x2) // 2
+        initial_mid_y = (self._y1 + self._y2) // 2
+        initial_mid_x_next = (to_cell._x1 + to_cell._x2) // 2
+        initial_mid_y_next = (to_cell._y1 + to_cell._y2) // 2
 
         fill_color = "red"
         if undo == True:
@@ -87,11 +107,11 @@ class Cell:
 
 
         line = Line(Point(initial_mid_x,initial_mid_y),Point(initial_mid_x_next,initial_mid_y_next))
-        self.__win.draw_line(line,"red")
-    
+        self._win.draw_line(line,"red")
+
 
 class Maze:
-    def __init__(self,x1,y1,num_rows,num_cols,cell_size_x,cell_size_y,win):
+    def __init__(self,x1,y1,num_rows,num_cols,cell_size_x,cell_size_y,win=None):
         self._cells = []
         self._x1 = x1
         self._y1 = y1
@@ -100,42 +120,42 @@ class Maze:
         self._cell_size_x = cell_size_x
         self._cell_size_y = cell_size_y
         self._win = win
+
+        self._create_cells()
+        self._break_entrace_and_exit()
     
     def _create_cells(self):
-
-        i = self._x1 
-        j = self._y1
 
         for col in range(self._num_cols):
             cell_col = []
             for row in range(self._num_rows):
-                cell_col.append([])
+                cell_col.append(Cell(self._win))
             self._cells.append(cell_col)
         
-        # for col in range(len(self._cells)):
-        #     cell = Cell(self._win)
-        #     cell.draw(i,j,i+self._cell_size_x,j)
-        #     for row in range(col+1,len(self._cells[col])):
-        #         cell.draw(i,j,i+self._cell_size_x,j+self._cell_size_y)
-        #         j += self.cell_size_y
-        #     i += self.cell_size_x
-        
-        i = self._x1
+        for i,col in enumerate(self._cells):
+            for j,rows in enumerate(col):
+                x = self._x1 + (i*self._cell_size_x)
+                y = self._y1 + (j*self._cell_size_y)
+                self._draw_cell(rows,x,y)
 
-        for col in range(len(self._cells)):
-            j = self._y1
-            self._draw_cell(i,j)
-            for row in range(1,len(self._cells[col])):
-                self._draw_cell(i,j + self._cell_size_y)
-                j += self._cell_size_y
-            i += self._cell_size_x
-
-    def _draw_cell(self,i,j):   
-        cell = Cell(self._win)
+    def _draw_cell(self,cell,i,j):
         cell.draw(i, j, self._cell_size_x + i, self._cell_size_y + j)
         self._animate()
 
     def _animate(self):
+
+        if self._win is None:
+            return None
+
         self._win.redraw()
         time.sleep(0.1)
+
+    def _break_entrace_and_exit(self):
+        top_cell = self._cells[0][0]
+        bot_cell = self._cells[-1][-1]
+        top_cell._has_top_wall = False
+        bot_cell._has_bot_wall = False
+        self._draw_cell(top_cell,top_cell._x1,top_cell._y1)
+        self._draw_cell(bot_cell,bot_cell._x1,bot_cell._y1)
+
 
