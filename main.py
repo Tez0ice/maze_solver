@@ -2,8 +2,7 @@ from graphic import Window,Point,Line,Cell,Maze
 
 def main():
     win = Window(800,600)
-    maze = Maze(50,50,5,5,50,50,win)
-    maze._break_entrace_and_exit()
+    maze = Maze(50,50,10,10,50,50,win)
     win.wait_for_close()
 
 

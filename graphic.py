@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, Canvas
 import time
+import random
 
 class Window:
     def __init__(self,width,height):
@@ -53,7 +54,7 @@ class Cell:
         self._x1 = None
         self._y1 = None
         self._x2 = None
-        self._y2 = None
+        self._y2 = None 
         self._win = window
 
     def draw(self,x1,y1,x2,y2):
@@ -123,6 +124,8 @@ class Maze:
 
         self._create_cells()
         self._break_entrace_and_exit()
+        self._break_walls_r(0,0)
+
     
     def _create_cells(self):
 
@@ -157,5 +160,58 @@ class Maze:
         bot_cell._has_bot_wall = False
         self._draw_cell(top_cell,top_cell._x1,top_cell._y1)
         self._draw_cell(bot_cell,bot_cell._x1,bot_cell._y1)
+
+
+    def _break_walls_r(self,i,j):
+        current_cell = self._cells[i][j]
+        current_cell.visited = True
+        while True:
+            to_visit = []
+            if i <= len(self._cells) - 1 and j <= len(self._cells) - 1:
+                if i != 0:
+                    left_cell = self._cells[i-1][j]
+
+                    if not left_cell.visited:
+                        to_visit.append((i-1,j))
+                        
+                if i != len(self._cells) - 1:
+                    right_cell = self._cells[i+1][j]
+
+                    if not right_cell.visited:
+                        to_visit.append((i+1,j))
+
+                if j != 0:
+                    top_cell = self._cells[i][j-1]
+
+                    if not top_cell.visited:
+                        to_visit.append((i,j-1))
+
+                if j != len(self._cells) - 1:
+                    bot_cell = self._cells[i][j+1]
+
+                    if not bot_cell.visited:
+                        to_visit.append((i,j+1))
+            
+            if to_visit == []:
+                current_cell.draw(current_cell._x1,current_cell._y1,current_cell._x2, current_cell._y2)
+                self._animate()
+                break
+            else:
+                choice = random.choice(to_visit)
+                to_visit.remove(choice)
+                if i > choice[0]:
+                    current_cell._has_left_wall = False
+                elif i < choice[0]:
+                    current_cell._has_right_wall = False
+                if j > choice[1]:
+                    current_cell._has_top_wall = False
+                elif j < choice[1]:
+                    current_cell._has_bot_wall = False
+                self._break_walls_r(choice[0],choice[1])
+        
+
+
+
+
 
 
