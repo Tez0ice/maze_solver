@@ -1,5 +1,5 @@
 import unittest
-
+import random
 from graphic import Maze
 
 class Tests(unittest.TestCase):
@@ -38,13 +38,24 @@ class Tests(unittest.TestCase):
         num_cols = 12
         num_rows = 10
         maze1 = Maze(0,0,num_rows,num_cols,10,10)
-        maze1._break_entrace_and_exit()
         self.assertEqual(
-            maze1._cells[0][0]._has_right_wall,
+            maze1._cells[0][0]._has_top_wall,
             False
         )
         self.assertEqual(
             maze1._cells[-1][-1]._has_bot_wall,
+            False
+        )
+
+    def test_cell_remove_visited(self):
+        num_cols = 12
+        num_rows = 10
+        maze1 = Maze(0,0,num_rows,num_cols,10,10)
+        random_col = random.randint(0,num_cols-1)
+        random_rows = random.randint(0,num_rows-1)
+
+        self.assertEqual(
+            maze1._cells[random_col][random_rows].visited,
             False
         )
 

@@ -108,7 +108,7 @@ class Cell:
 
 
         line = Line(Point(initial_mid_x,initial_mid_y),Point(initial_mid_x_next,initial_mid_y_next))
-        self._win.draw_line(line,"red")
+        self._win.draw_line(line,fill_color)
 
 
 class Maze:
@@ -125,6 +125,8 @@ class Maze:
         self._create_cells()
         self._break_entrace_and_exit()
         self._break_walls_r(0,0)
+        self._reset_cells_visited()
+        self._solve()
 
     
     def _create_cells(self):
@@ -163,6 +165,9 @@ class Maze:
 
 
     def _break_walls_r(self,i,j):
+        if self._win == None:
+            return
+
         current_cell = self._cells[i][j]
         current_cell.visited = True
         while True:
@@ -209,9 +214,59 @@ class Maze:
                     current_cell._has_bot_wall = False
                 self._break_walls_r(choice[0],choice[1])
         
+        
+    def _reset_cells_visited(self):
+        for col in self._cells:
+            for row in col:
+                row.visited = False
 
 
+    def _solve(self):
+        return self._solve_r(0,0)
+    
+    def _solve_r(self,i,j):
+        self._animate()
+        current_cell = self._cells[i][j]
+        current_cell.visited = True
+        result = False
+        
+        if current_cell == self._cells[self._num_cols - 1][self._num_rows - 1]:
+            return True
 
-
-
+        if i > 0:
+            left_neighbour = self._cells[i-1][j]
+            if not current_cell._has_left_wall and not left_neighbour.visited:
+                current_cell.draw_move(left_neighbour)
+                result = self._solve_r(i-1,j)
+                if result:
+                    return result
+                current_cell.draw_move(left_neighbour,undo=True)
+        if i < self._num_cols - 1:
+            right_neighbour = self._cells[i+1][j]
+            if not current_cell._has_right_wall and not right_neighbour.visited:
+                current_cell.draw_move(right_neighbour)
+                result = self._solve_r(i+1,j)
+                if result:
+                    return result
+                current_cell.draw_move(right_neighbour,undo=True)
+        if j > 0:
+            top_neighbour = self._cells[i][j-1]
+            if not current_cell._has_top_wall and not top_neighbour.visited:
+                current_cell.draw_move(top_neighbour)
+                result = self._solve_r(i,j-1)
+                if result:
+                    return result
+                current_cell.draw_move(top_neighbour,undo=True)
+        if j < self._num_rows - 1:
+            bot_neighbour = self._cells[i][j+1]
+            if not current_cell._has_bot_wall and not bot_neighbour.visited:
+                current_cell.draw_move(bot_neighbour)
+                result = self._solve_r(i,j+1)
+                if result:
+                    return result
+                current_cell.draw_move(bot_neighbour,undo=True)
+        
+        if not result:
+            return False
+        
 
